@@ -1,0 +1,12 @@
+P-D defense is a MATLAB software repository.
+
+For installation simply add the 'functions' folder to your Matlab path.
+To design the detecor, use the tools provided in the 'scripts' folder.
+
+For use of the detectors described in the paper, include the 'dat'
+folder in your Matlab path and call the function 'pincerDetector'.
+
+Email questions or bug reports to:
+ jason 'dot' gross 'at' mail.wvu.edu
+ todd 'dot' humphreys 'at' mail.utexas.edu
+	
