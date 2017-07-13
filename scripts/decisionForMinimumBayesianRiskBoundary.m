@@ -1,26 +1,21 @@
-% decisionForMinimumBayesianRiskBoundary.m create the
-% P-D defense deicison regions 
+% create the evalution grid & evalate p(zk)incer
 % Author: Jason Gross
-
-% note: this script assumes that the Matlab workspace
-% is populated with modelPincerDistributionsMonteCarlo.m
-
-% configuration variables
-costType=0; 		% variable cost in theta 2, fixed 1, misclass 0
-SAVEFIGS=1; 		% switch to save time history of detector optimzation
-tau_eml=0.3; 		% spacing assumed (in chips) for the symmetric difference
-power=-1.2:.4:20;	% range and resolution of power for which regions are drawn
-deml=0:.4:40;		% range and resolution of symmetric differences for which regions are drawn
-
+%clc; clear; close all;
+%load pincerMonteCarloData11.mat
+costType=1; % variable cost in theta 2, fixed 1, misclass 0
+SAVEFIGS=0;
+tau_eml=0.3;
+power=-1.2:.35:20;
+deml=0:.35:40;
 [demlR,powerR]=meshgrid(deml,power);
 
-% assume a reasonable partition based on visual
-% inspection of the scatter plot for the initial deicison regions
+% start a reasonable partition based on visual
+% inspection of the scatter plot for initial deicison
 
-% H0: D=>[0,4) P=>[-1,1)
-% H1: D=>[4,11] P=>[-1,1)
-% H3:  D=>[0,4) P=>[1,20]
-% H2: D=>[4,35] P=>[1,20] && D=>[11,35] P=>[-1,1]
+% clean D=>[0,4) P=>[-1,1)
+% multipath D=>[4,11] P=>[-1,1)
+% jam  D=>[0,4) P=>[1,20]
+% spoof D=>[4,35] P=>[1,20] && D=>[11,35] P=>[-1,1]
 
 pincerDecision=zeros(size(demlR));
 for i=1:length(power)
@@ -33,7 +28,7 @@ for i=1:length(power)
             else
                 pincerDecision(i,j)=2;
             end
-        elseif (power(i)>=1 && deml(j)>=4)
+        elseif (power(i)>=1 && deml(j)>=6)
             pincerDecision(i,j)=3;
         else
             pincerDecision(i,j)=4;
@@ -41,11 +36,12 @@ for i=1:length(power)
     end
 end
 
-% plot the initial decision regoins
 mymap=[0 1 0; 0 0 0; 1 0 0; 0 0 1];
-figure()
+
+figure
+
 colormap(mymap);
-h=pcolor(deml,pow,pincerDecision);
+h=pcolor(deml,power,pincerDecision);
 set(h, 'EdgeColor', 'none');
 xlabel('Distortion |D(eml)|')
 ylabel('Power (dB)')
@@ -55,11 +51,9 @@ set(gca,'FontSize',14)
 title('Initial Pincer Decision Partions')
 
 
-%  go through all the Monte-Carlo simulated observations and determine the grid
+%  go through all the simulated observations and determine the grid
 %  location, or GridKey.  Keeping track of these will speed up the cost
-%  optimzation;
-
-%initialize variables
+%  optimzation
 dataKeys=zeros(Np,Nm);
 powerSimObs=zeros(Np,Nm);
 demlSimObs=zeros(Np,Nm);
@@ -84,7 +78,7 @@ for i=1:Np
         powerSimObs(i,j)=p;
         demlSimObs(i,j)=d;
         % although there is only one unique theta per set of Nm obs
-        % storing this way makes keying the data easier
+        % storing this way makes keying the data easier in the next step
         thetas(i,j)=thetaKeys(i);
         deltaThetas(i,j)=obsSimConfigs(i).Delta_theta;
         deltaTaus(i,j)=obsSimConfigs(i).Delta_tau;
@@ -93,15 +87,10 @@ for i=1:Np
     end
 end
 
-% go through all the simulated obs & determine if it lies on a decision
-% region boundary. if so, evaluate the current cost
-% and find all other simulated obs of the same key location.
-% determine if the cost of the location would be lower 
-% if another hypotheses were accepted.
-% if so, change the for the location decision accordingly.  
-% for efficiency, keep track of the keys that have been checked and
-% only check each key them once.
-% iterate until now more boundaries are changed.
+% go through all sim obs & determine the cost of the sim obs and all other sim obs of the same key
+% also check cost if other hypotheses were accepted
+% would the cost be reduced by accepting a different hypothesis. If so, change the
+% deicison.  for efficiency, keep track of the keys that have been checked
 
 keysAlreadyChecked=[];
 changedDecisionIndex=1;
@@ -109,12 +98,9 @@ if(SAVEFIGS)
     figSaveStr=sprintf('pincerDec%08d.png',changedDecisionIndex);
     saveas(gcf,figSaveStr);
 end
-
 costChange=0;
 firstIteration=1;
 lastPincerDecision=pincerDecision;
-% unless it is the first optimzation iteration, quit optimizing if no
-% changes were made in the last iteration.
 while(sum(sum(pincerDecision-lastPincerDecision))~=0 || firstIteration==1 )
     firstIteration=0;
     lastPincerDecision=pincerDecision;
@@ -126,12 +112,13 @@ while(sum(sum(pincerDecision-lastPincerDecision))~=0 || firstIteration==1 )
                 continue
             end
             % determine if on a decision boundary, if not, continue
+            
             onDecisionBoundary=0;
             powLoc=mod(key,length(deml));
             
             demlLoc=floor((key)/length(deml));
             if((demlLoc>1))&& (demlLoc<length(deml)) &&( (powLoc>1)&&(powLoc<length(power)))
-     
+                % disp('Here')
                 if powLoc<length(power)
                     if(pincerDecision(powLoc,demlLoc)~=pincerDecision(powLoc+1,demlLoc))
                         onDecisionBoundary=1;
@@ -173,16 +160,16 @@ while(sum(sum(pincerDecision-lastPincerDecision))~=0 || firstIteration==1 )
                     end
                 end
             end
-
             if(onDecisionBoundary==0)
                 continue
+            else
+                disp('Evaluating')
             end
             
-	    % keep track if this location has already been evaluated
             keysAlreadyChecked=[keysAlreadyChecked key];
             
-            % evaluate cost of current decision and the cost of all the other
-	    % possible decisions for this  grid key location
+            % evaluate cost of current decision and all the others
+            % for this grid key
             decisionOfGridKey=interp2(demlR,powerR,pincerDecision,...
                 demlSimObs(i,j),powerSimObs(i,j),'nearest');
             
@@ -196,7 +183,7 @@ while(sum(sum(pincerDecision-lastPincerDecision))~=0 || firstIteration==1 )
             otherDecisionCosts=[0,0,0];
             
             for k=1:length(thetasInGridKey)
-                
+                %% this constant cost mat is what will need to be made variable
                 currentCost=currentCost+pincerCostFunction(decisionOfGridKey,...
                     thetasInGridKey(k)+1, etadBsinGridKey(k) ,deltaTauIAsInGridKey(k), ...
                     deltaThetaIAsInGridKey(k),tau_eml,costType);
@@ -211,17 +198,18 @@ while(sum(sum(pincerDecision-lastPincerDecision))~=0 || firstIteration==1 )
             % determine if cost can be reduced, if so, accept lowest cost
             if(sum(otherDecisionCosts<currentCost))
                 newDecision=otherDecisions(otherDecisionCosts==min(otherDecisionCosts));
+                disp([j,i])
+                % get grid location from key
                 
-                % 2D grid location from key value
                 powLoc=mod(key,length(deml));
+                %powLoc=powBinLoc+1;
                 demlLoc=floor((key)/length(deml));
                 
-                
-                disp([demlLoc powLoc])
+                %disp('Loc')
+                %disp([demlLoc powLoc])
                 pincerDecision(powLoc,demlLoc)=newDecision(1);
                 changedDecisionIndex=changedDecisionIndex+1;
-
-                % save the cost improvement history (for plotting)
+                %save the cost improvement history for plotting
                 costChange(changedDecisionIndex)=costChange(changedDecisionIndex-1)+...
                     (currentCost-min(otherDecisionCosts));
                 

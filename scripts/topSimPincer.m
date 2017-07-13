@@ -10,12 +10,12 @@ scenarioVec = {'null','moderate_multipath','severe_multipath', ...
 scenario = scenarioVec{1};
 s.PA = -156;
 s.N0 = -204;
-s.M = 7;
+s.Ms = 7;
 s.taud = 0.15;
 s.Ta = 0.1;
 s.WFE = 2e6;
 s.WFEbeta = 20e6;
-s.Pbeta = -129.8583;
+s.Pbeta = -130.8815; 
 s.Tc = 1e-6;
 s.sigmaP = 0.2;
 
@@ -75,12 +75,13 @@ s.Delta_tau = op.Delta_tau;
 s.Delta_theta = op.Delta_theta;
 
 %----- Simulate observables for scenario
-Nsim = 2000;
+Nsim = 10000;
 dVec = zeros(Nsim,1);
 PVec = zeros(Nsim,1);
 PfullVec = zeros(Nsim,1);
 for ii=1:Nsim
   [o] = simulatePincerObservables(s);
+  %[o] = simulatePincerObservablesOld(s);
   dVec(ii) = o.d; PVec(ii) = o.P; PfullVec(ii) = o.Pfull;
 end
 % The final symmetric difference D is the modulus of d
@@ -88,7 +89,7 @@ DVec = abs(dVec);
 
 %----- Plot results
 % Choose P0 so that under scenario "clean" mean(PVec) = P0
-P0 = -139.7754;
+P0 = -140.0906; 
 fprintf('Scenario: %s\n',scenario);
 fprintf('etadB = %.1f dB\n', s.etadB);
 fprintf('Delta_tau = %.2f chips\n', s.Delta_tau);
@@ -118,12 +119,12 @@ xlim([-3 30]);
 %----- Check theoretical distribution for D 
 % Under the clean or jamming scenarios, the theoretical distribution of D is
 % Rayleigh with scale parameter sigma_d^2
-if(p.i == 0 | p.i == 3)
-  sigma_d = sqrt(8*s.taud)
+if(p.i == 0 || p.i == 3)
+  sigma_d = sqrt(8*s.taud*o.beta^2*(o.sigmaN/o.sigmaN0)^2)
   sigma_d_from_samples = std(dVec)
   xVec = [0.001:0.001:7]';
   pD = (xVec/sigma_d^2).*exp(-xVec.^2/2/sigma_d^2);
-  figure(3);
+  figure(3);clf;
   plot(xVec,pD);
   xlabel('x');
   ylabel('p_D');
