@@ -28,7 +28,11 @@ for i=1:length(power)
             else
                 pincerDecision(i,j)=2;
             end
-        elseif (power(i)>=1 && deml(j)>=6)
+        elseif (power(i)>=1 && power(i)<=5 && deml(j)>=6)
+            pincerDecision(i,j)=3;
+        elseif (power(i)>=5 && power(i)<=10 && deml(j)>=7)
+            pincerDecision(i,j)=3;
+        elseif (power(i)>=10 && deml(j)>=7.5)
             pincerDecision(i,j)=3;
         else
             pincerDecision(i,j)=4;
