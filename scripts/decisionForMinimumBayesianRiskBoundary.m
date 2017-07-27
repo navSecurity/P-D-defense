@@ -2,7 +2,7 @@
 % Author: Jason Gross
 %clc; clear; close all;
 %load pincerMonteCarloData11.mat
-costType=1; % variable cost in theta 2, fixed 1, misclass 0
+costType=0; % variable cost in theta 2, fixed 1, misclass 0
 SAVEFIGS=0;
 tau_eml=0.3;
 power=-1.2:.35:20;
@@ -233,6 +233,30 @@ while(sum(sum(pincerDecision-lastPincerDecision))~=0 || firstIteration==1 )
     end
 end
 
+% eliminate potential of island decisions
+[M,N]=size(pincerDecision);
+for i=2:M-1
+    for j=2:N-1
+        
+        decision=pincerDecision(i,j);
+        boundaryDecision=pincerDecision(i,j+1);
+        if ((pincerDecision(i,j-1)==boundaryDecision)&&...
+            (pincerDecision(i-1,j)==boundaryDecision)&&...
+            (pincerDecision(i+1,j)==boundaryDecision)&&...
+             (decision~=boundaryDecision))
+            disp('Found Island')
+            pincerDecision(i,j)=boundaryDecision;
+        end
+    end
+end
 
+
+figure,colormap(mymap);
+h=pcolor(deml,power,pincerDecision);
+set(h, 'EdgeColor', 'none');
+xlabel('Distortion |D(eml)|')
+ylabel('Power (dB)')
+xlim([.05 30])
+set(gca,'FontSize',14)
 
 
