@@ -1,13 +1,16 @@
-Please see and cite
+For using this software, please see and cite
 
-Wesson, K.D., Gross, J.N., Humphreys, T.E., Evans, B.L., "GNSS Signal Authentication via Power and Distortion Monitoring." Accepted to appear in IEEE Transactions on Aerospace and Electronic Systems, October 2017. 
+Wesson, K.D., Gross, J.N., Humphreys, T.E., Evans, B.L., "GNSS Signal Authentication via Power and Distortion Monitoring" Accepted to appear in IEEE Transactions on Aerospace and Electronic Systems, October 2017. 
 
 Pre-print available at https://arxiv.org/abs/1702.06554
 
-When using this repository,
+For the Maximum-Likelihood Estension to the P-D defense, PD-ML, see:
+
+Gross, J.N., Kilic, C., Humphreys, T.E., "Maximum-Likelihood Power-Distortion GNSS Signal Authentication", Submitted to IEEE Transactions on Aerospace and Electronic Systems, December 2017.
+
+Pre-print available at https://arxiv.org/abs/1712.04501
 
 P-D defense is a MATLAB software repository.
-
 For installation simply add the 'functions' folder to your Matlab path.
 To design the detecor, use the tools provided in the 'scripts' folder.
 
