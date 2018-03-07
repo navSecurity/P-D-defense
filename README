@@ -1,4 +1,4 @@
-For using this software, please see and cite
+For using this software, please see and cite 
 
 Wesson, K.D., Gross, J.N., Humphreys, T.E., Evans, B.L., "GNSS Signal Authentication via Power and Distortion Monitoring" Accepted to appear in IEEE Transactions on Aerospace and Electronic Systems, October 2017. 
 
@@ -21,4 +21,5 @@ folder in your Matlab path and call the function 'pincerDetector'.
 Email questions or bug reports to:
  jason 'dot' gross 'at' mail.wvu.edu
  todd 'dot' humphreys 'at' mail.utexas.edu
-	
+ 
+https://doi.org/10.5281/zenodo.1193667
