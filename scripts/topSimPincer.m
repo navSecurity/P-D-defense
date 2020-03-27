@@ -81,7 +81,6 @@ PVec = zeros(Nsim,1);
 PfullVec = zeros(Nsim,1);
 for ii=1:Nsim
   [o] = simulatePincerObservables(s);
-  %[o] = simulatePincerObservablesOld(s);
   dVec(ii) = o.d; PVec(ii) = o.P; PfullVec(ii) = o.Pfull;
 end
 % The final symmetric difference D is the modulus of d
@@ -123,7 +122,10 @@ if(p.i == 0 || p.i == 3)
   sigma_d = sqrt(8*s.taud*o.beta^2*(o.sigmaN/o.sigmaN0)^2)
   sigma_d_from_samples = std(dVec)
   xVec = [0.001:0.001:7]';
-  pD = (xVec/sigma_d^2).*exp(-xVec.^2/2/sigma_d^2);
+  % Note that the Rayleigh distribution given in Eq. (13) of the paper as posted
+  % on IEEE Explore is incorrect.  sigma_d^2 in the equation is twice as large
+  % as it should be.  The equation below gives the correct expression.
+  pD = (2*xVec/(sigma_d^2)).*exp(-xVec.^2/(sigma_d^2));
   figure(3);clf;
   plot(xVec,pD);
   xlabel('x');
